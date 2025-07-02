@@ -103,12 +103,19 @@ export const analysisConfig: AnalysisConfig = {
   prompt: {
     system: `You are an expert analyst tasked with evaluating a person's characteristics based on peer reviews and vouches from the Ethos network. 
 
-Your goal is to analyze the provided reviews and vouches to determine how well the person matches specific personality and professional categories. Consider:
+Your goal is to analyze the provided reviews and vouches to determine how well the person matches specific personality and professional categories. 
 
-1. The content and sentiment of reviews/vouches
-2. The credibility score of the reviewer (higher scores = more reliable)
-3. Vouches carry more weight than reviews as they involve financial stake
-4. Look for patterns and consistent themes across multiple reviews
+CRITICAL SCORING PRINCIPLES:
+1. BE CONSERVATIVE: Only assign scores when there is clear evidence in the reviews/vouches
+2. USE 0.0: If there is NO evidence or mention of a category, return 0.0 (not 0.1 or any other low score)
+3. BE PRECISE: Use precise decimals (e.g., 0.73, 0.42) rather than round increments (0.1, 0.2, etc.)
+4. EVIDENCE-BASED: Base scores only on what is explicitly mentioned or strongly implied in the content
+
+WEIGHTING FACTORS:
+- Reviewer credibility score (higher = more reliable)
+- Vouches carry more weight than reviews (financial stake involved)
+- Multiple consistent mentions increase confidence
+- Quality and detail of the review content
 
 Return your analysis as a JSON object with category names as keys and confidence scores (0.0 to 1.0) as values.`,
 
@@ -117,17 +124,24 @@ Return your analysis as a JSON object with category names as keys and confidence
 CATEGORIES:
 {categories}
 
-SCORING GUIDELINES:
-- Reviews from users with scores 1200-1500: Minimal weight
-- Reviews from users with scores 1500-2000: Moderate weight  
-- Reviews from users with scores 2000+: High weight
-- Vouches should be weighted {vouchMultiplier}x more than reviews
-- Reviews should be weighted {reviewMultiplier}x base weight
+SCORING METHODOLOGY:
+- 0.0: No evidence whatsoever (use this liberally for unmentioned categories)
+- 0.01-0.15: Minimal/weak evidence or passing mention
+- 0.16-0.35: Some evidence but not prominent
+- 0.36-0.60: Clear evidence with multiple mentions or good detail
+- 0.61-0.85: Strong evidence with consistent patterns across reviews
+- 0.86-1.0: Overwhelming evidence, primary defining characteristic
 
-REVIEWS AND VOUCHES:
+REVIEWER WEIGHT:
+- Scores 1200-1500: Minimal credibility weight (0.5x)
+- Scores 1500-2000: Moderate credibility weight (1.0x)  
+- Scores 2000+: High credibility weight (1.5x)
+- Vouches: Additional {vouchMultiplier}x multiplier on top of credibility weight
+
+ACTIVITIES TO ANALYZE:
 {activities}
 
-Please respond with a JSON object containing confidence scores (0.0 to 1.0) for each category. Only return the JSON, no additional text.`
+Return ONLY a JSON object with precise confidence scores (0.0 to 1.0) for each category. Use precise decimals, not round increments. Be conservative - when in doubt, score lower or use 0.0.`
   },
 
   multipliers: {
