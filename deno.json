@@ -1,6 +1,7 @@
 {
   "name": "ethos-spidergraph",
   "version": "1.0.0",
+  "exports": "./main.ts",
   "tasks": {
     "check": "deno fmt --check && deno lint && deno check **/*.ts && deno check **/*.tsx",
     "cli": "echo \"import '\\$fresh/src/dev/cli.ts'\" | deno run --unstable -A -",
