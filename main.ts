@@ -4,7 +4,6 @@
 /// <reference lib="dom.asynciterable" />
 /// <reference lib="deno.ns" />
 
-import "$fresh/src/server/polyfill.ts";
 import { load } from "https://deno.land/std@0.208.0/dotenv/mod.ts";
 
 // Load environment variables from .env file
