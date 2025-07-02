@@ -140,69 +140,95 @@ export default function UserSearch() {
     }
   };
 
+  // Effect to create/update chart when analysis changes
+  useEffect(() => {
+    if (!analysis || !chartRef.current) return;
+
+    // Destroy existing chart
+    if (chartInstance.current) {
+      chartInstance.current.destroy();
+    }
+
+    const categories = Object.keys(analysis.results);
+    const data = categories.map(category => Math.round(analysis.results[category] * 100));
+
+    // Create new chart
+    chartInstance.current = new Chart(chartRef.current, {
+      type: 'radar',
+      data: {
+        labels: categories,
+        datasets: [{
+          label: selectedUser?.name || 'Profile Analysis',
+          data: data,
+          fill: true,
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgb(54, 162, 235)',
+          pointBackgroundColor: 'rgb(54, 162, 235)',
+          pointBorderColor: '#fff',
+          pointHoverBackgroundColor: '#fff',
+          pointHoverBorderColor: 'rgb(54, 162, 235)',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        elements: {
+          line: {
+            borderWidth: 3
+          }
+        },
+        scales: {
+          r: {
+            angleLines: {
+              display: true
+            },
+            suggestedMin: 0,
+            suggestedMax: 100,
+            pointLabels: {
+              font: {
+                size: 12
+              }
+            },
+            ticks: {
+              display: true,
+              stepSize: 20
+            }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top' as const,
+          },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return `${context.label}: ${context.raw}%`;
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Cleanup function
+    return () => {
+      if (chartInstance.current) {
+        chartInstance.current.destroy();
+      }
+    };
+  }, [analysis, selectedUser?.name]);
+
   const renderSpiderGraph = () => {
     if (!analysis) return null;
-    
-    // Transform analysis results into Nivo radar chart format
-    // Each category becomes a key with its percentage value
-    const categories = Object.keys(analysis.results);
-    const data = [{
-      user: selectedUser?.name || 'User',
-      ...Object.fromEntries(
-        categories.map(category => [
-          category.replace(/\s+/g, '_'), // Replace spaces with underscores for keys
-          Math.round(analysis.results[category] * 100)
-        ])
-      )
-    }];
-
-    const keys = categories.map(category => category.replace(/\s+/g, '_'));
 
     return (
       <div class="mb-6 p-4 bg-white rounded-lg border">
         <h4 class="text-lg font-semibold mb-4">Profile Spider Graph</h4>
-        <div style={{ height: '500px' }}>
-          <ResponsiveRadar
-            data={data}
-            keys={keys}
-            indexBy="user"
-            valueFormat=">-.0f"
-            maxValue={100}
-            margin={{ top: 40, right: 80, bottom: 40, left: 80 }}
-            borderColor={{ from: 'color' }}
-            gridLevels={5}
-            gridShape="circular"
-            gridLabelOffset={36}
-            enableDots={true}
-            dotSize={8}
-            dotColor={{ theme: 'background' }}
-            dotBorderWidth={2}
-            colors={{ scheme: 'set2' }}
-            fillOpacity={0.25}
-            blendMode="multiply"
-            motionConfig="wobbly"
-            legends={[
-              {
-                anchor: 'top-left',
-                direction: 'column',
-                translateX: -50,
-                translateY: -40,
-                itemWidth: 80,
-                itemHeight: 20,
-                itemTextColor: '#999',
-                symbolSize: 12,
-                symbolShape: 'circle',
-                effects: [
-                  {
-                    on: 'hover',
-                    style: {
-                      itemTextColor: '#000'
-                    }
-                  }
-                ]
-              }
-            ]}
-          />
+        <div style={{ height: '500px', position: 'relative' }}>
+          <canvas ref={chartRef}></canvas>
         </div>
       </div>
     );

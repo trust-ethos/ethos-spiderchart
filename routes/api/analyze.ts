@@ -139,9 +139,22 @@ export const handler: Handlers = {
       
       let analysisResult: AnalysisResult;
       try {
-        analysisResult = JSON.parse(analysisText);
+        // Try to extract JSON from the response (handle cases where LLM adds extra text)
+        let jsonString = analysisText.trim();
+        
+        // Look for JSON object boundaries
+        const jsonStart = jsonString.indexOf('{');
+        const jsonEnd = jsonString.lastIndexOf('}') + 1;
+        
+        if (jsonStart !== -1 && jsonEnd > jsonStart) {
+          jsonString = jsonString.substring(jsonStart, jsonEnd);
+        }
+        
+        analysisResult = JSON.parse(jsonString);
+        console.log('Successfully parsed analysis result:', JSON.stringify(analysisResult, null, 2));
       } catch (parseError) {
         console.error(`Failed to parse analysis result: ${analysisText}`);
+        console.error('Parse error:', parseError);
         throw new Error("Failed to parse LLM analysis result");
       }
 
