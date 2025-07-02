@@ -17,12 +17,12 @@ export default function UserSearch() {
   const [justSelected, setJustSelected] = useState(false);
   const chartRef = useRef<HTMLCanvasElement>(null);
   const chartInstance = useRef<Chart | null>(null);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const searchUsers = async () => {
       // Skip search if user just selected someone
       if (justSelected) {
-        setJustSelected(false);
         return;
       }
 
@@ -39,13 +39,18 @@ export default function UserSearch() {
         
         if (data.ok && data.data) {
           setResults(data.data.values);
-          setShowDropdown(true);
+          // Only show dropdown if user hasn't just selected someone
+          if (!justSelected) {
+            setShowDropdown(true);
+          }
         } else {
           setResults([]);
+          setShowDropdown(false);
         }
       } catch (error) {
         console.error("Search failed:", error);
         setResults([]);
+        setShowDropdown(false);
       } finally {
         setLoading(false);
       }
@@ -55,6 +60,20 @@ export default function UserSearch() {
     return () => clearTimeout(debounceTimer);
   }, [query, justSelected]);
 
+  // Handle click outside to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleUserSelect = (user: EthosSearchResult) => {
     setJustSelected(true);
     setQuery(user.name || user.username);
@@ -62,19 +81,14 @@ export default function UserSearch() {
     setSelectedUser(user);
     setAnalysis(null);
     setError(null);
+    setResults([]); // Clear results to prevent dropdown from reopening
   };
 
   const handleInputBlur = () => {
-    // Don't hide dropdown if user just selected someone
-    if (justSelected) {
-      return;
-    }
-    // Delay hiding dropdown to allow for clicks
+    // Always close dropdown on blur after a delay to allow for clicks
     setTimeout(() => {
-      if (!justSelected) {
-        setShowDropdown(false);
-      }
-    }, 200);
+      setShowDropdown(false);
+    }, 150);
   };
 
   const handleAnalyze = async () => {
@@ -338,7 +352,7 @@ export default function UserSearch() {
 
   return (
     <div class="w-full">
-      <div class="relative w-full max-w-md mx-auto">
+      <div ref={searchContainerRef} class="relative w-full max-w-md mx-auto">
         <div class="relative">
           <input
             type="text"
@@ -346,13 +360,14 @@ export default function UserSearch() {
             onInput={(e) => {
               const newQuery = (e.target as HTMLInputElement).value;
               setQuery(newQuery);
-              // Reset justSelected when user starts typing again
-              if (justSelected && newQuery !== (selectedUser?.name || selectedUser?.username || '')) {
+              // Reset justSelected when user starts typing after selection
+              if (justSelected) {
                 setJustSelected(false);
               }
             }}
             onFocus={() => {
-              if (!justSelected && query.length >= 2) {
+              // Only show dropdown if we have results and user hasn't just selected
+              if (results.length > 0 && !justSelected) {
                 setShowDropdown(true);
               }
             }}
