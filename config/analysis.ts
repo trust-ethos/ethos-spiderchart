@@ -35,15 +35,11 @@ export const analysisConfig: AnalysisConfig = {
     },
     {
         name: "Collab manager",
-        description: "Trusted connectors driving top-tier partnerships and community collabs across the web3 ecosystem."
+        description: "ONLY score if explicitly mentioned as 'collab manager', 'CM', or similar collaboration management role terms. Requires specific mention of these exact terms."
       },
     {
       name: "Builder",
       description: "Actively creates and ships products, tools, or services that provide value"
-    },
-    {
-      name: "Projects",
-      description: "Associated with specific projects, protocols, or platforms rather than being identified as an individual person"
     },
     {
       name: "Influencer",
@@ -67,15 +63,15 @@ export const analysisConfig: AnalysisConfig = {
     },
     {
       name: "Marketers",
-      description: "Growth-focused professionals who excel at promotion, brand building, community engagement, and user acquisition"
+      description: "ONLY score if explicitly mentioned as 'marketer', 'marketing', or similar marketing role terms. Requires specific mention of these exact terms."
     },
     {
       name: "Alpha Callers",
-      description: "Sharp analysts who consistently identify early opportunities, trends, and high-potential investments before they go mainstream"
+      description: "ONLY score if explicitly mentioned as 'alpha caller', 'alpha', 'calls alpha', or similar alpha-calling terms. Requires specific mention of these exact terms."
     },
     {
       name: "Developers",
-      description: "Technical builders who write code, create applications, smart contracts, and technical infrastructure"
+      description: "ONLY score if explicitly mentioned as 'developer', 'dev', 'coder', 'programmer', or similar development role terms. Requires specific mention of these exact terms."
     },
     {
       name: "Farmers",
