@@ -319,7 +319,7 @@ export default function UserSearch() {
                 const isMediumScore = score >= 0.4 && score < 0.7;
                 
                 return (
-                  <tr key={category} class={index % 2 === 0 ? 'theme-bg-surface' : 'theme-bg-secondary'}>
+                  <tr key={category} class="theme-bg-surface">
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium theme-text-primary">
                       #{index + 1}
                     </td>
