@@ -10,7 +10,7 @@ export default function DarkModeToggle() {
     return true;
   });
 
-  // Apply dark mode class when component mounts or state changes
+  // Apply dark mode class and styles when component mounts or state changes
   useEffect(() => {
     const applyDarkMode = (dark: boolean) => {
       console.log('Applying dark mode:', dark); // Debug log
@@ -20,9 +20,17 @@ export default function DarkModeToggle() {
       if (dark) {
         htmlElement.classList.add('dark');
         bodyElement.classList.add('dark');
+        // Set inline styles to prevent any flash
+        htmlElement.style.backgroundColor = '#0f172a';
+        bodyElement.style.backgroundColor = '#0f172a';
+        bodyElement.style.color = '#e2e8f0';
       } else {
         htmlElement.classList.remove('dark');
         bodyElement.classList.remove('dark');
+        // Set light mode inline styles
+        htmlElement.style.backgroundColor = '#ffffff';
+        bodyElement.style.backgroundColor = '#ffffff';
+        bodyElement.style.color = '#1f2937';
       }
     };
 

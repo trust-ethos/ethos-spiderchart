@@ -36,17 +36,45 @@ export default function ProfilePage({ params }: PageProps<unknown, ProfilePagePr
         <meta name="twitter:image" content={ogImageUrl} />
         <meta name="twitter:image:alt" content={`Spider graph analysis for @${username}`} />
         
-        <link rel="stylesheet" href="/darkmode.css" />
+        {/* Prevent flash by setting dark background immediately */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            /* Prevent white flash on page load */
+            html, body {
+              background-color: #0f172a !important;
+              color: #e2e8f0 !important;
+            }
+            .theme-bg-primary {
+              background: linear-gradient(to bottom right, #0f172a, #1e293b) !important;
+            }
+          `
+        }} />
+        
         <script dangerouslySetInnerHTML={{
           __html: `
-            // Apply dark mode immediately to prevent flash
+            // Apply dark mode immediately to prevent flash - runs before CSS loads
             (function() {
               try {
                 const savedMode = localStorage.getItem('darkMode');
                 const prefersDark = savedMode !== null ? savedMode === 'true' : true;
-                if (prefersDark && document.documentElement && document.body) {
+                if (prefersDark) {
                   document.documentElement.classList.add('dark');
-                  document.body.classList.add('dark');
+                  if (document.body) {
+                    document.body.classList.add('dark');
+                  }
+                  // Set background immediately
+                  document.documentElement.style.backgroundColor = '#0f172a';
+                  if (document.body) {
+                    document.body.style.backgroundColor = '#0f172a';
+                    document.body.style.color = '#e2e8f0';
+                  }
+                } else {
+                  // Light mode - reset to defaults
+                  document.documentElement.style.backgroundColor = '#ffffff';
+                  if (document.body) {
+                    document.body.style.backgroundColor = '#ffffff';
+                    document.body.style.color = '#1f2937';
+                  }
                 }
               } catch (e) {
                 console.warn('Dark mode initialization failed:', e);
@@ -54,6 +82,8 @@ export default function ProfilePage({ params }: PageProps<unknown, ProfilePagePr
             })();
           `
         }} />
+        
+        <link rel="stylesheet" href="/darkmode.css" />
       </Head>
       
       <div class="min-h-screen bg-gradient-to-br theme-bg-primary">
