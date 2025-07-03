@@ -54,6 +54,10 @@ export const analysisConfig: AnalysisConfig = {
       description: "Entrepreneurial leaders who start and build companies, projects, or initiatives from the ground up"
     },
     {
+      name: "Angel investors",
+      description: "Early-stage investors who provide capital, mentorship, and strategic guidance to startups and emerging projects"
+    },
+    {
       name: "Ethos contributor",
       description: "Actively contributes to the Ethos ecosystem through reviews, vouches, slashes, or other platform engagement"
     },
