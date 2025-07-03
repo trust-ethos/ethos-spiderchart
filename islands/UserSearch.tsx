@@ -1,9 +1,5 @@
 import { useState, useEffect, useRef } from "preact/hooks";
-import { EthosSearchResult, EthosActivity, ProfileAnalysis } from "../types/ethos.ts";
-import { Chart, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, RadarController } from "chart.js";
-
-// Register Chart.js components
-Chart.register(RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend, RadarController);
+import { EthosSearchResult } from "../types/ethos.ts";
 
 export default function UserSearch() {
   const [query, setQuery] = useState("");
@@ -11,12 +7,7 @@ export default function UserSearch() {
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedUser, setSelectedUser] = useState<EthosSearchResult | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [analysis, setAnalysis] = useState<ProfileAnalysis | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [justSelected, setJustSelected] = useState(false);
-  const chartRef = useRef<HTMLCanvasElement>(null);
-  const chartInstance = useRef<Chart | null>(null);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -79,8 +70,6 @@ export default function UserSearch() {
     setQuery(user.name || user.username);
     setShowDropdown(false);
     setSelectedUser(user);
-    setAnalysis(null);
-    setError(null);
     setResults([]); // Clear results to prevent dropdown from reopening
   };
 
@@ -91,330 +80,11 @@ export default function UserSearch() {
     }, 150);
   };
 
-  const handleAnalyze = async () => {
+  const handleAnalyze = () => {
     if (!selectedUser) return;
-
-    setAnalyzing(true);
-    setError(null);
-    setAnalysis(null);
-
-    try {
-      console.log(`Starting analysis for user: ${selectedUser.userkey}`);
-      
-      // Step 1: Fetch activities
-      const activitiesResponse = await fetch('/api/activities', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userkey: selectedUser.userkey
-        })
-      });
-
-      if (!activitiesResponse.ok) {
-        const errorData = await activitiesResponse.json();
-        throw new Error(errorData.error || 'Failed to fetch activities');
-      }
-
-      const activitiesData = await activitiesResponse.json();
-      console.log(`Fetched ${activitiesData.values.length} activities`);
-      
-      if (activitiesData.values.length === 0) {
-        throw new Error('No reviews or vouches found for this user');
-      }
-
-      // Step 2: Analyze with LLM
-      const analysisResponse = await fetch('/api/analyze', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userkey: selectedUser.userkey,
-          activities: activitiesData.values
-        })
-      });
-
-      if (!analysisResponse.ok) {
-        const errorData = await analysisResponse.json();
-        throw new Error(errorData.error || 'Failed to analyze profile');
-      }
-
-      const analysisResult = await analysisResponse.json();
-      console.log('Analysis completed:', analysisResult);
-      setAnalysis(analysisResult);
-
-         } catch (error) {
-       console.error("Analysis failed:", error);
-       const errorMessage = error instanceof Error ? error.message : String(error);
-       setError(errorMessage);
-     } finally {
-      setAnalyzing(false);
-    }
-  };
-
-  // Effect to create/update chart when analysis changes
-  useEffect(() => {
-    if (!analysis || !chartRef.current) return;
-
-    // Destroy existing chart
-    if (chartInstance.current) {
-      chartInstance.current.destroy();
-    }
-
-    // Filter out categories with 0 values for cleaner spider graph
-    const filteredCategories = Object.keys(analysis.results).filter(category => analysis.results[category] > 0);
-    const data = filteredCategories.map(category => Math.round(analysis.results[category] * 100));
-
-    // Create new chart with dark mode colors
-    chartInstance.current = new Chart(chartRef.current, {
-      type: 'radar',
-      data: {
-        labels: filteredCategories,
-        datasets: [{
-          label: selectedUser?.name || 'Profile Analysis',
-          data: data,
-          fill: true,
-          backgroundColor: 'rgba(99, 102, 241, 0.2)', // indigo with opacity
-          borderColor: 'rgb(99, 102, 241)', // indigo
-          pointBackgroundColor: 'rgb(99, 102, 241)',
-          pointBorderColor: '#1e293b', // slate-800
-          pointHoverBackgroundColor: '#1e293b',
-          pointHoverBorderColor: 'rgb(99, 102, 241)',
-          borderWidth: 2,
-          pointRadius: 4,
-          pointHoverRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        elements: {
-          line: {
-            borderWidth: 3
-          }
-        },
-        scales: {
-          r: {
-            angleLines: {
-              display: true,
-              color: '#475569' // slate-600
-            },
-            grid: {
-              color: '#475569' // slate-600
-            },
-            suggestedMin: 0,
-            suggestedMax: 100,
-            pointLabels: {
-              font: {
-                size: 12
-              },
-              color: '#cbd5e1' // slate-300
-            },
-            ticks: {
-              display: true,
-              stepSize: 20,
-              color: '#94a3b8', // slate-400
-              backdropColor: 'transparent'
-            }
-          }
-        },
-        plugins: {
-          legend: {
-            position: 'top' as const,
-            labels: {
-              color: '#cbd5e1' // slate-300
-            }
-          },
-          tooltip: {
-            backgroundColor: '#1e293b', // slate-800
-            titleColor: '#f1f5f9', // slate-100
-            bodyColor: '#cbd5e1', // slate-300
-            borderColor: '#475569', // slate-600
-            borderWidth: 1,
-            callbacks: {
-              label: function(context) {
-                return `${context.label}: ${context.raw}%`;
-              }
-            }
-          }
-        }
-      }
-    });
-
-    // Cleanup function
-    return () => {
-      if (chartInstance.current) {
-        chartInstance.current.destroy();
-      }
-    };
-  }, [analysis, selectedUser?.name]);
-
-  const renderSpiderGraph = () => {
-    if (!analysis) return null;
-
-    return (
-      <div class="mb-6 p-4 theme-bg-secondary rounded-lg border theme-border">
-        <h4 class="text-lg font-semibold mb-4 theme-text-primary">Profile Spider Graph</h4>
-        <div style={{ height: '500px', position: 'relative' }}>
-          <canvas ref={chartRef}></canvas>
-        </div>
-      </div>
-    );
-  };
-
-  const renderHighlights = () => {
-    if (!analysis) return null;
     
-    const categories = Object.keys(analysis.results);
-    const sortedCategories = categories
-      .filter(category => analysis.results[category] > 0)
-      .sort((a, b) => analysis.results[b] - analysis.results[a])
-      .slice(0, 3);
-    
-    if (sortedCategories.length === 0) return null;
-    
-    return (
-      <div class="mb-6 p-4 theme-bg-surface rounded-lg border theme-border">
-        <h4 class="text-lg font-semibold mb-4 theme-text-primary">🌟 Top Matches</h4>
-        <div class="grid gap-3">
-          {sortedCategories.map((category, index) => {
-            const score = analysis.results[category];
-            const percentage = Math.round(score * 100);
-            const rankEmoji = ['🥇', '🥈', '🥉'][index];
-            
-            return (
-              <div key={category} class="flex items-center justify-between p-3 theme-bg-secondary rounded-lg">
-                <div class="flex items-center space-x-3">
-                  <span class="text-lg">{rankEmoji}</span>
-                  <div>
-                    <div class="font-medium theme-text-primary">{category}</div>
-                    <div class="text-sm theme-text-secondary">Confidence: {score.toFixed(3)}</div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-                    {percentage}%
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
-
-  const renderAnalysisTable = () => {
-    if (!analysis) return null;
-    
-    const categories = Object.keys(analysis.results);
-    const sortedCategories = categories.sort((a, b) => analysis.results[b] - analysis.results[a]);
-    
-    return (
-      <div class="mt-6 p-4 theme-bg-secondary rounded-lg border theme-border">
-        <div class="flex justify-between items-center mb-4">
-          <h4 class="text-lg font-semibold theme-text-primary">Analysis Results</h4>
-          {analysis.model && (
-            <span class="text-xs theme-text-muted bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
-              Model: {analysis.model}
-            </span>
-          )}
-        </div>
-        
-        {/* Summary Stats */}
-        <div class="mb-6 p-3 theme-bg-surface rounded-lg border theme-border">
-          <div class="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div class="text-2xl font-bold text-blue-600">{analysis.totalReviews}</div>
-              <div class="text-sm theme-text-secondary">Reviews</div>
-            </div>
-            <div>
-              <div class="text-2xl font-bold text-green-600">{analysis.totalVouches}</div>
-              <div class="text-sm theme-text-secondary">Vouches</div>
-            </div>
-            <div>
-              <div class="text-2xl font-bold text-purple-600">{analysis.avgAuthorScore}</div>
-              <div class="text-sm theme-text-secondary">Avg Score</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Results Table */}
-        <div class="overflow-hidden rounded-lg border theme-border">
-          <table class="min-w-full divide-y theme-border">
-            <thead class="theme-bg-secondary">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium theme-text-secondary uppercase tracking-wider">
-                  Rank
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium theme-text-secondary uppercase tracking-wider">
-                  Category
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium theme-text-secondary uppercase tracking-wider">
-                  Confidence Score
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium theme-text-secondary uppercase tracking-wider">
-                  Percentage
-                </th>
-              </tr>
-            </thead>
-            <tbody class="theme-bg-surface divide-y theme-border">
-              {sortedCategories.map((category, index) => {
-                const score = analysis.results[category];
-                const percentage = Math.round(score * 100);
-                const isHighScore = score >= 0.7;
-                const isMediumScore = score >= 0.4 && score < 0.7;
-                
-                const isZeroScore = score === 0;
-                
-                return (
-                  <tr key={category} class="theme-bg-surface">
-                    <td class={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isZeroScore ? 'text-gray-400 dark:text-gray-500' : 'theme-text-primary'}`}>
-                      #{index + 1}
-                    </td>
-                    <td class={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isZeroScore ? 'text-gray-400 dark:text-gray-500' : 'theme-text-primary'}`}>
-                      {category}
-                    </td>
-                    <td class={`px-6 py-4 whitespace-nowrap text-sm font-mono ${isZeroScore ? 'text-gray-400 dark:text-gray-500' : 'theme-text-secondary'}`}>
-                      {score.toFixed(3)}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div class="flex-1 mr-3">
-                          <div class="flex items-center">
-                            <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              isHighScore 
-                                ? 'bg-green-100 text-green-700 border border-green-200'
-                                : isMediumScore 
-                                ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
-                                : 'bg-slate-100 text-slate-700 border border-slate-200 dark:bg-white dark:text-black dark:border-gray-300'
-                            }`}>
-                              {percentage}%
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Raw JSON for debugging */}
-        <details class="mt-4">
-          <summary class="cursor-pointer text-sm theme-text-secondary hover:theme-text-primary">
-            Show Raw Analysis Results (for debugging)
-          </summary>
-          <pre class="mt-2 p-3 theme-bg-primary border theme-border rounded text-xs overflow-auto theme-text-secondary">
-            {JSON.stringify(analysis.results, null, 2)}
-          </pre>
-        </details>
-      </div>
-    );
+    // Navigate to the profile page
+    window.location.href = `/profile/${selectedUser.username}`;
   };
 
   return (
@@ -546,32 +216,10 @@ export default function UserSearch() {
           
           <button
             onClick={handleAnalyze}
-            disabled={analyzing}
-            class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-800 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center border border-indigo-500"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center border border-indigo-500"
           >
-            {analyzing ? (
-              <>
-                <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                Analyzing Profile...
-              </>
-            ) : (
-              'Analyze Profile & Generate Results'
-            )}
+            <span>🔍 Analyze Profile</span>
           </button>
-
-          {error && (
-            <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p class="text-red-700 text-sm">{error}</p>
-            </div>
-          )}
-
-          {analysis && (
-            <>
-              {renderHighlights()}
-              {renderSpiderGraph()}
-              {renderAnalysisTable()}
-            </>
-          )}
         </div>
       )}
     </div>
