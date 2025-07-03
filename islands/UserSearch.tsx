@@ -6,17 +6,10 @@ export default function UserSearch() {
   const [results, setResults] = useState<EthosSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<EthosSearchResult | null>(null);
-  const [justSelected, setJustSelected] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const searchUsers = async () => {
-      // Skip search if user just selected someone
-      if (justSelected) {
-        return;
-      }
-
       if (query.length < 2) {
         setResults([]);
         setShowDropdown(false);
@@ -30,10 +23,7 @@ export default function UserSearch() {
         
         if (data.ok && data.data) {
           setResults(data.data.values);
-          // Only show dropdown if user hasn't just selected someone
-          if (!justSelected) {
-            setShowDropdown(true);
-          }
+          setShowDropdown(true);
         } else {
           setResults([]);
           setShowDropdown(false);
@@ -49,7 +39,7 @@ export default function UserSearch() {
 
     const debounceTimer = setTimeout(searchUsers, 300);
     return () => clearTimeout(debounceTimer);
-  }, [query, justSelected]);
+  }, [query]);
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -66,11 +56,8 @@ export default function UserSearch() {
   }, []);
 
   const handleUserSelect = (user: EthosSearchResult) => {
-    setJustSelected(true);
-    setQuery(user.name || user.username);
-    setShowDropdown(false);
-    setSelectedUser(user);
-    setResults([]); // Clear results to prevent dropdown from reopening
+    // Navigate directly to the profile page
+    window.location.href = `/profile/${user.username}`;
   };
 
   const handleInputBlur = () => {
@@ -80,52 +67,98 @@ export default function UserSearch() {
     }, 150);
   };
 
-  const handleAnalyze = () => {
-    if (!selectedUser) return;
+
+
+  const handleGoClick = async () => {
+    if (query.length < 2) return;
     
-    // Navigate to the profile page
-    window.location.href = `/profile/${selectedUser.username}`;
+    // If we have results, use the first one
+    if (results.length > 0) {
+      window.location.href = `/profile/${results[0].username}`;
+      return;
+    }
+    
+    // Otherwise, search for exact match
+    try {
+      const response = await fetch(`/api/search?query=${encodeURIComponent(query)}&limit=1`);
+      const data = await response.json();
+      
+      if (data.ok && data.data && data.data.values.length > 0) {
+        const user = data.data.values[0];
+        window.location.href = `/profile/${user.username}`;
+      } else {
+        // If no exact match, try searching for the query as a username directly
+        window.location.href = `/profile/${query}`;
+      }
+    } catch (error) {
+      console.error("Go search failed:", error);
+      // Fallback: try the query as a username
+      window.location.href = `/profile/${query}`;
+    }
+  };
+
+  const handleKeyPress = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleGoClick();
+    }
   };
 
   return (
     <div class="w-full">
-      <div ref={searchContainerRef} class="relative w-full max-w-md mx-auto">
-        <div class="relative">
-          <input
-            type="text"
-            value={query}
-            onInput={(e) => {
-              const newQuery = (e.target as HTMLInputElement).value;
-              setQuery(newQuery);
-              // Reset justSelected when user starts typing after selection
-              if (justSelected) {
-                setJustSelected(false);
-              }
-            }}
-            onFocus={() => {
-              // Only show dropdown if we have results and user hasn't just selected
-              if (results.length > 0 && !justSelected) {
-                setShowDropdown(true);
-              }
-            }}
-            onBlur={handleInputBlur}
-            placeholder="Search Ethos users..."
-            class="w-full px-4 py-3 pl-12 theme-text-primary theme-bg-surface border theme-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-slate-500"
-          />
-          <div class="absolute inset-y-0 left-0 flex items-center pl-4">
-            <svg class="w-5 h-5 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-            </svg>
-          </div>
-          {loading && (
-            <div class="absolute inset-y-0 right-0 flex items-center pr-4">
-              <div class="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      <div ref={searchContainerRef} class="relative w-full max-w-2xl mx-auto">
+        <div class="flex space-x-3">
+          <div class="relative flex-1">
+            <input
+              type="text"
+              value={query}
+              onInput={(e) => {
+                const newQuery = (e.target as HTMLInputElement).value;
+                setQuery(newQuery);
+              }}
+              onKeyPress={handleKeyPress}
+              onFocus={() => {
+                // Show dropdown if we have results
+                if (results.length > 0) {
+                  setShowDropdown(true);
+                }
+              }}
+              onBlur={handleInputBlur}
+              placeholder="Search Ethos users..."
+              class="w-full px-4 py-3 pl-12 theme-text-primary theme-bg-surface border theme-border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-slate-500"
+            />
+            <div class="absolute inset-y-0 left-0 flex items-center pl-4">
+              <svg class="w-5 h-5 theme-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
             </div>
-          )}
+            {loading && (
+              <div class="absolute inset-y-0 right-0 flex items-center pr-4">
+                <div class="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+          </div>
+          
+          <button
+            onClick={handleGoClick}
+            disabled={query.length < 2 || loading}
+            class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors duration-200 flex items-center space-x-2 min-w-[80px] justify-center"
+          >
+            {loading ? (
+              <div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              <>
+                <span>Go</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+                </svg>
+              </>
+            )}
+          </button>
         </div>
 
         {showDropdown && results.length > 0 && (
-          <div class="absolute z-10 w-full mt-1 theme-bg-surface border theme-border rounded-lg shadow-lg max-h-96 overflow-y-auto">
+          <div class="absolute z-10 left-0 right-0 mt-1 theme-bg-surface border theme-border rounded-lg shadow-lg max-h-96 overflow-y-auto" style="width: calc(100% - 104px)">
             {results.map((user) => (
               <div
                 key={user.userkey}
@@ -169,7 +202,7 @@ export default function UserSearch() {
         )}
 
         {showDropdown && results.length === 0 && !loading && query.length >= 2 && (
-          <div class="absolute z-10 w-full mt-1 theme-bg-surface border theme-border rounded-lg shadow-lg">
+          <div class="absolute z-10 left-0 right-0 mt-1 theme-bg-surface border theme-border rounded-lg shadow-lg" style="width: calc(100% - 104px)">
             <div class="px-4 py-3 text-sm theme-text-secondary">
               No users found for "{query}"
             </div>
@@ -177,51 +210,7 @@ export default function UserSearch() {
         )}
       </div>
 
-      {selectedUser && (
-        <div class="mt-8 p-6 theme-bg-surface rounded-lg max-w-4xl mx-auto border theme-border">
-          <h3 class="text-lg font-semibold theme-text-primary mb-4">Selected User:</h3>
-          <div class="flex items-center space-x-4 mb-6">
-            <img
-              src={selectedUser.avatar || '/default-avatar.svg'}
-              alt={selectedUser.name || selectedUser.username}
-              class="w-16 h-16 rounded-full bg-slate-200 border theme-border"
-              onError={(e) => {
-                (e.target as HTMLImageElement).src = '/default-avatar.svg';
-              }}
-            />
-            <div class="flex-1">
-              <div class="flex items-center space-x-2 mb-1">
-                <h4 class="text-xl font-medium theme-text-primary">
-                  {selectedUser.name || selectedUser.username}
-                </h4>
-                {selectedUser.score > 0 && (
-                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-100 text-indigo-700 border border-indigo-200">
-                    Score: {selectedUser.score}
-                  </span>
-                )}
-              </div>
-              {selectedUser.username && selectedUser.name && (
-                <p class="theme-text-secondary">@{selectedUser.username}</p>
-              )}
-              {selectedUser.description && (
-                <p class="theme-text-secondary mt-2">{selectedUser.description}</p>
-              )}
-              {selectedUser.primaryAddress && (
-                <p class="text-xs theme-text-muted mt-2 font-mono">
-                  {selectedUser.primaryAddress}
-                </p>
-              )}
-            </div>
-          </div>
-          
-          <button
-            onClick={handleAnalyze}
-            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center border border-indigo-500"
-          >
-            <span>🔍 Analyze Profile</span>
-          </button>
-        </div>
-      )}
+
     </div>
   );
 } 

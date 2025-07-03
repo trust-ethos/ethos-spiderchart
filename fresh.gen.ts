@@ -4,6 +4,7 @@
 
 import * as $api_activities from "./routes/api/activities.ts";
 import * as $api_analyze from "./routes/api/analyze.ts";
+import * as $api_og_image from "./routes/api/og-image.ts";
 import * as $api_search from "./routes/api/search.ts";
 import * as $index from "./routes/index.tsx";
 import * as $profile_username_ from "./routes/profile/[username].tsx";
@@ -16,6 +17,7 @@ const manifest = {
   routes: {
     "./routes/api/activities.ts": $api_activities,
     "./routes/api/analyze.ts": $api_analyze,
+    "./routes/api/og-image.ts": $api_og_image,
     "./routes/api/search.ts": $api_search,
     "./routes/index.tsx": $index,
     "./routes/profile/[username].tsx": $profile_username_,
