@@ -5,6 +5,15 @@ import { EthosActivity, AnalysisResult, ProfileAnalysis } from "../../types/etho
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
+// Simple in-memory cache for analysis results
+interface CacheEntry {
+  result: ProfileAnalysis;
+  timestamp: number;
+}
+
+const analysisCache = new Map<string, CacheEntry>();
+const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+
 export const handler: Handlers = {
   async POST(req) {
     try {
@@ -16,6 +25,24 @@ export const handler: Handlers = {
           { 
             status: 400,
             headers: { "Content-Type": "application/json" }
+          }
+        );
+      }
+
+      // Check cache first
+      const cacheKey = userkey;
+      const cachedEntry = analysisCache.get(cacheKey);
+      const now = Date.now();
+      
+      if (cachedEntry && (now - cachedEntry.timestamp) < CACHE_DURATION_MS) {
+        console.log(`Returning cached analysis for userkey: ${userkey}`);
+        return new Response(
+          JSON.stringify(cachedEntry.result),
+          {
+            headers: { 
+              "Content-Type": "application/json",
+              "Access-Control-Allow-Origin": "*"
+            }
           }
         );
       }
@@ -165,8 +192,17 @@ export const handler: Handlers = {
         totalReviews: reviews.length,
         totalVouches: vouches.length,
         avgAuthorScore: Math.round(avgAuthorScore),
+        model: analysisConfig.openRouter.model,
         results: analysisResult
       };
+
+      // Cache the result
+      analysisCache.set(cacheKey, {
+        result: profileAnalysis,
+        timestamp: now
+      });
+
+      console.log(`Cached analysis result for userkey: ${userkey}`);
 
       return new Response(
         JSON.stringify(profileAnalysis),

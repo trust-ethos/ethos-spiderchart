@@ -136,5 +136,6 @@ export interface ProfileAnalysis {
   totalReviews: number;
   totalVouches: number;
   avgAuthorScore: number;
+  model: string;
   results: AnalysisResult;
 } 

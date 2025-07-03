@@ -264,6 +264,48 @@ export default function UserSearch() {
     );
   };
 
+  const renderHighlights = () => {
+    if (!analysis) return null;
+    
+    const categories = Object.keys(analysis.results);
+    const sortedCategories = categories
+      .filter(category => analysis.results[category] > 0)
+      .sort((a, b) => analysis.results[b] - analysis.results[a])
+      .slice(0, 3);
+    
+    if (sortedCategories.length === 0) return null;
+    
+    return (
+      <div class="mb-6 p-4 theme-bg-surface rounded-lg border theme-border">
+        <h4 class="text-lg font-semibold mb-4 theme-text-primary">🌟 Top Matches</h4>
+        <div class="grid gap-3">
+          {sortedCategories.map((category, index) => {
+            const score = analysis.results[category];
+            const percentage = Math.round(score * 100);
+            const rankEmoji = ['🥇', '🥈', '🥉'][index];
+            
+            return (
+              <div key={category} class="flex items-center justify-between p-3 theme-bg-secondary rounded-lg">
+                <div class="flex items-center space-x-3">
+                  <span class="text-lg">{rankEmoji}</span>
+                  <div>
+                    <div class="font-medium theme-text-primary">{category}</div>
+                    <div class="text-sm theme-text-secondary">Confidence: {score.toFixed(3)}</div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                    {percentage}%
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   const renderAnalysisTable = () => {
     if (!analysis) return null;
     
@@ -272,7 +314,14 @@ export default function UserSearch() {
     
     return (
       <div class="mt-6 p-4 theme-bg-secondary rounded-lg border theme-border">
-        <h4 class="text-lg font-semibold mb-4 theme-text-primary">Analysis Results</h4>
+        <div class="flex justify-between items-center mb-4">
+          <h4 class="text-lg font-semibold theme-text-primary">Analysis Results</h4>
+          {analysis.model && (
+            <span class="text-xs theme-text-muted bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded">
+              Model: {analysis.model}
+            </span>
+          )}
+        </div>
         
         {/* Summary Stats */}
         <div class="mb-6 p-3 theme-bg-surface rounded-lg border theme-border">
@@ -520,6 +569,7 @@ export default function UserSearch() {
 
           {analysis && (
             <>
+              {renderHighlights()}
               {renderSpiderGraph()}
               {renderAnalysisTable()}
             </>
