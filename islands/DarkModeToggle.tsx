@@ -1,33 +1,34 @@
 import { useState, useEffect } from "preact/hooks";
 
 export default function DarkModeToggle() {
-  const [isDark, setIsDark] = useState(true); // Default to dark mode
-
-  useEffect(() => {
-    // Check if there's a saved preference
-    const savedMode = localStorage.getItem('darkMode');
-    if (savedMode !== null) {
-      setIsDark(savedMode === 'true');
+  // Get initial state from localStorage or default to true
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('darkMode');
+      return savedMode !== null ? savedMode === 'true' : true;
     }
-    
-    // Apply the mode to the document
-    updateDarkMode(isDark);
-  }, []);
+    return true;
+  });
 
+  // Apply dark mode class when component mounts or state changes
   useEffect(() => {
-    updateDarkMode(isDark);
+    const applyDarkMode = (dark: boolean) => {
+      console.log('Applying dark mode:', dark); // Debug log
+      const htmlElement = document.documentElement;
+      const bodyElement = document.body;
+      
+      if (dark) {
+        htmlElement.classList.add('dark');
+        bodyElement.classList.add('dark');
+      } else {
+        htmlElement.classList.remove('dark');
+        bodyElement.classList.remove('dark');
+      }
+    };
+
+    applyDarkMode(isDark);
     localStorage.setItem('darkMode', isDark.toString());
   }, [isDark]);
-
-  const updateDarkMode = (dark: boolean) => {
-    if (dark) {
-      document.documentElement.classList.add('dark');
-      document.body.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.classList.remove('dark');
-    }
-  };
 
   const toggleDarkMode = () => {
     setIsDark(!isDark);

@@ -8,6 +8,19 @@ export default function Home() {
       <Head>
         <title>Ethos Spider Graph - Profile Analysis</title>
         <meta name="description" content="Analyze Ethos profiles and visualize alignment with categories in a spider graph" />
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            // Apply dark mode immediately to prevent flash
+            (function() {
+              const savedMode = localStorage.getItem('darkMode');
+              const prefersDark = savedMode !== null ? savedMode === 'true' : true;
+              if (prefersDark) {
+                document.documentElement.classList.add('dark');
+                document.body.classList.add('dark');
+              }
+            })();
+          `
+        }} />
       </Head>
       
       <div class="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 transition-colors duration-300">
