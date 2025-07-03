@@ -2,7 +2,8 @@ import { Configuration } from "twind";
 
 export default {
   selfURL: import.meta.url,
-  darkMode: "class",
+  darkMode: "class", // Enable class-based dark mode
+  hash: false,
   theme: {
     extend: {
       animation: {
