@@ -29,7 +29,7 @@ jobs:
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
         with:
-          project: "serpintaxt-ethos-spide-31"
+          project: "ethos-spidergraph"
           entrypoint: "main.ts"
           root: "."
           
