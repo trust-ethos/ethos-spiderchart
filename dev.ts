@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run -A --watch=static/,routes/
+#!/usr/bin/env -S deno run -A --unstable-kv --watch=static/,routes/
 
 import { load } from "https://deno.land/std@0.208.0/dotenv/mod.ts";
 

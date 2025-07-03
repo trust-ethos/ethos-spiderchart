@@ -370,7 +370,7 @@ export default function UserSearch() {
                 const isZeroScore = score === 0;
                 
                 return (
-                  <tr key={category} class={isZeroScore ? 'bg-white dark:bg-gray-800/50' : 'theme-bg-surface'}>
+                  <tr key={category} class="theme-bg-surface">
                     <td class={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isZeroScore ? 'text-gray-400 dark:text-gray-500' : 'theme-text-primary'}`}>
                       #{index + 1}
                     </td>
@@ -385,13 +385,11 @@ export default function UserSearch() {
                         <div class="flex-1 mr-3">
                           <div class="flex items-center">
                             <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              isZeroScore 
-                                ? 'bg-gray-50 text-gray-400 border border-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:border-gray-600'
-                                : isHighScore 
+                              isHighScore 
                                 ? 'bg-green-100 text-green-700 border border-green-200'
                                 : isMediumScore 
                                 ? 'bg-yellow-100 text-yellow-700 border border-yellow-200'
-                                : 'bg-slate-100 text-slate-700 border border-slate-200'
+                                : 'bg-slate-100 text-slate-700 border border-slate-200 dark:bg-white dark:text-black dark:border-gray-300'
                             }`}>
                               {percentage}%
                             </span>

@@ -1,3 +1,4 @@
+/// <reference lib="deno.unstable" />
 import { Handlers } from "$fresh/server.ts";
 import { analysisConfig } from "../../config/analysis.ts";
 import { EthosActivity, AnalysisResult, ProfileAnalysis } from "../../types/ethos.ts";
@@ -5,14 +6,9 @@ import { EthosActivity, AnalysisResult, ProfileAnalysis } from "../../types/etho
 const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
-// Simple in-memory cache for analysis results
-interface CacheEntry {
-  result: ProfileAnalysis;
-  timestamp: number;
-}
-
-const analysisCache = new Map<string, CacheEntry>();
-const CACHE_DURATION_MS = 24 * 60 * 60 * 1000; // 24 hours
+// Deno KV cache for analysis results
+const kv = await Deno.openKv();
+const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 export const handler: Handlers = {
   async POST(req) {
@@ -30,14 +26,13 @@ export const handler: Handlers = {
       }
 
       // Check cache first
-      const cacheKey = userkey;
-      const cachedEntry = analysisCache.get(cacheKey);
-      const now = Date.now();
+      const cacheKey = ["analysis", userkey];
+      const cachedResult = await kv.get<ProfileAnalysis>(cacheKey);
       
-      if (cachedEntry && (now - cachedEntry.timestamp) < CACHE_DURATION_MS) {
+      if (cachedResult.value) {
         console.log(`Returning cached analysis for userkey: ${userkey}`);
         return new Response(
-          JSON.stringify(cachedEntry.result),
+          JSON.stringify(cachedResult.value),
           {
             headers: { 
               "Content-Type": "application/json",
@@ -196,11 +191,8 @@ export const handler: Handlers = {
         results: analysisResult
       };
 
-      // Cache the result
-      analysisCache.set(cacheKey, {
-        result: profileAnalysis,
-        timestamp: now
-      });
+      // Cache the result with TTL
+      await kv.set(cacheKey, profileAnalysis, { expireIn: CACHE_DURATION_MS });
 
       console.log(`Cached analysis result for userkey: ${userkey}`);
 
