@@ -163,14 +163,15 @@ export default function UserSearch() {
       chartInstance.current.destroy();
     }
 
-    const categories = Object.keys(analysis.results);
-    const data = categories.map(category => Math.round(analysis.results[category] * 100));
+    // Filter out categories with 0 values for cleaner spider graph
+    const filteredCategories = Object.keys(analysis.results).filter(category => analysis.results[category] > 0);
+    const data = filteredCategories.map(category => Math.round(analysis.results[category] * 100));
 
     // Create new chart with dark mode colors
     chartInstance.current = new Chart(chartRef.current, {
       type: 'radar',
       data: {
-        labels: categories,
+        labels: filteredCategories,
         datasets: [{
           label: selectedUser?.name || 'Profile Analysis',
           data: data,

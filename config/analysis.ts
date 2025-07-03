@@ -42,9 +42,9 @@ export const analysisConfig: AnalysisConfig = {
       description: "Actively creates and ships products, tools, or services that provide value"
     },
     {
-        name: "DeFi",
-        description: "Deep knowledge and experience in decentralized finance protocols"
-      },
+      name: "Projects",
+      description: "Associated with specific projects, protocols, or platforms rather than being identified as an individual person"
+    },
     {
       name: "Influencer",
       description: "Influences others through insights, analysis, and forward-thinking perspectives"
@@ -54,8 +54,12 @@ export const analysisConfig: AnalysisConfig = {
       description: "Entrepreneurial leaders who start and build companies, projects, or initiatives from the ground up"
     },
     {
-      name: "Business Development",
-      description: "Strategic professionals who identify opportunities, build partnerships, and drive growth through relationship building"
+      name: "Ethos contributor",
+      description: "Actively contributes to the Ethos ecosystem through reviews, vouches, slashes, or other platform engagement"
+    },
+    {
+      name: "Content creator",
+      description: "Creates various types of content including videos, articles, research, thought leadership, or educational materials"
     },
     {
       name: "Artists",
