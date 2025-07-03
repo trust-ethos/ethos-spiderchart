@@ -1,7 +1,6 @@
 import { Head } from "$fresh/runtime.ts";
 import UserSearch from "../islands/UserSearch.tsx";
 import DarkModeToggle from "../islands/DarkModeToggle.tsx";
-import DarkModeTest from "../components/DarkModeTest.tsx";
 
 export default function Home() {
   return (
@@ -56,8 +55,7 @@ export default function Home() {
             <UserSearch />
           </div>
 
-          {/* Temporary Dark Mode Test */}
-          <DarkModeTest />
+
 
           {/* Features Preview */}
           <div class="grid md:grid-cols-3 gap-8 mb-12">
