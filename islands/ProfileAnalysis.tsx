@@ -43,7 +43,7 @@ export default function ProfileAnalysisIsland({ username }: ProfileAnalysisProps
         const searchData = await searchResponse.json();
         
         // Find exact username match
-        const foundUser = searchData.results.find((u: EthosSearchResult) => 
+        const foundUser = searchData.data.values.find((u: EthosSearchResult) => 
           u.username.toLowerCase() === username.toLowerCase()
         );
 
