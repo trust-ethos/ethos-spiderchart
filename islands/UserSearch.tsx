@@ -166,7 +166,7 @@ export default function UserSearch() {
     const categories = Object.keys(analysis.results);
     const data = categories.map(category => Math.round(analysis.results[category] * 100));
 
-    // Create new chart
+    // Create new chart with dark mode colors
     chartInstance.current = new Chart(chartRef.current, {
       type: 'radar',
       data: {
@@ -175,12 +175,12 @@ export default function UserSearch() {
           label: selectedUser?.name || 'Profile Analysis',
           data: data,
           fill: true,
-          backgroundColor: 'rgba(54, 162, 235, 0.2)',
-          borderColor: 'rgb(54, 162, 235)',
-          pointBackgroundColor: 'rgb(54, 162, 235)',
-          pointBorderColor: '#fff',
-          pointHoverBackgroundColor: '#fff',
-          pointHoverBorderColor: 'rgb(54, 162, 235)',
+          backgroundColor: 'rgba(99, 102, 241, 0.2)', // indigo with opacity
+          borderColor: 'rgb(99, 102, 241)', // indigo
+          pointBackgroundColor: 'rgb(99, 102, 241)',
+          pointBorderColor: '#1e293b', // slate-800
+          pointHoverBackgroundColor: '#1e293b',
+          pointHoverBorderColor: 'rgb(99, 102, 241)',
           borderWidth: 2,
           pointRadius: 4,
           pointHoverRadius: 6
@@ -197,26 +197,41 @@ export default function UserSearch() {
         scales: {
           r: {
             angleLines: {
-              display: true
+              display: true,
+              color: '#475569' // slate-600
+            },
+            grid: {
+              color: '#475569' // slate-600
             },
             suggestedMin: 0,
             suggestedMax: 100,
             pointLabels: {
               font: {
                 size: 12
-              }
+              },
+              color: '#cbd5e1' // slate-300
             },
             ticks: {
               display: true,
-              stepSize: 20
+              stepSize: 20,
+              color: '#94a3b8', // slate-400
+              backdropColor: 'transparent'
             }
           }
         },
         plugins: {
           legend: {
             position: 'top' as const,
+            labels: {
+              color: '#cbd5e1' // slate-300
+            }
           },
           tooltip: {
+            backgroundColor: '#1e293b', // slate-800
+            titleColor: '#f1f5f9', // slate-100
+            bodyColor: '#cbd5e1', // slate-300
+            borderColor: '#475569', // slate-600
+            borderWidth: 1,
             callbacks: {
               label: function(context) {
                 return `${context.label}: ${context.raw}%`;
@@ -239,8 +254,8 @@ export default function UserSearch() {
     if (!analysis) return null;
 
     return (
-      <div class="mb-6 p-4 bg-white rounded-lg border">
-        <h4 class="text-lg font-semibold mb-4">Profile Spider Graph</h4>
+      <div class="mb-6 p-4 bg-slate-800 rounded-lg border border-slate-700">
+        <h4 class="text-lg font-semibold mb-4 text-slate-100">Profile Spider Graph</h4>
         <div style={{ height: '500px', position: 'relative' }}>
           <canvas ref={chartRef}></canvas>
         </div>
@@ -255,47 +270,47 @@ export default function UserSearch() {
     const sortedCategories = categories.sort((a, b) => analysis.results[b] - analysis.results[a]);
     
     return (
-      <div class="mt-6 p-4 bg-white rounded-lg border">
-        <h4 class="text-lg font-semibold mb-4">Analysis Results</h4>
+      <div class="mt-6 p-4 bg-slate-800 rounded-lg border border-slate-700">
+        <h4 class="text-lg font-semibold mb-4 text-slate-100">Analysis Results</h4>
         
         {/* Summary Stats */}
-        <div class="mb-6 p-3 bg-gray-50 rounded-lg">
+        <div class="mb-6 p-3 bg-slate-700 rounded-lg border border-slate-600">
           <div class="grid grid-cols-3 gap-4 text-center">
             <div>
-              <div class="text-2xl font-bold text-blue-600">{analysis.totalReviews}</div>
-              <div class="text-sm text-gray-600">Reviews</div>
+              <div class="text-2xl font-bold text-blue-400">{analysis.totalReviews}</div>
+              <div class="text-sm text-slate-300">Reviews</div>
             </div>
             <div>
-              <div class="text-2xl font-bold text-green-600">{analysis.totalVouches}</div>
-              <div class="text-sm text-gray-600">Vouches</div>
+              <div class="text-2xl font-bold text-green-400">{analysis.totalVouches}</div>
+              <div class="text-sm text-slate-300">Vouches</div>
             </div>
             <div>
-              <div class="text-2xl font-bold text-purple-600">{analysis.avgAuthorScore}</div>
-              <div class="text-sm text-gray-600">Avg Score</div>
+              <div class="text-2xl font-bold text-purple-400">{analysis.avgAuthorScore}</div>
+              <div class="text-sm text-slate-300">Avg Score</div>
             </div>
           </div>
         </div>
 
         {/* Results Table */}
-        <div class="overflow-hidden rounded-lg border border-gray-200">
-          <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+        <div class="overflow-hidden rounded-lg border border-slate-600">
+          <table class="min-w-full divide-y divide-slate-600">
+            <thead class="bg-slate-700">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                   Rank
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                   Category
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                   Confidence Score
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th class="px-6 py-3 text-left text-xs font-medium text-slate-300 uppercase tracking-wider">
                   Percentage
                 </th>
               </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="bg-slate-800 divide-y divide-slate-600">
               {sortedCategories.map((category, index) => {
                 const score = analysis.results[category];
                 const percentage = Math.round(score * 100);
@@ -303,14 +318,14 @@ export default function UserSearch() {
                 const isMediumScore = score >= 0.4 && score < 0.7;
                 
                 return (
-                  <tr key={category} class={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  <tr key={category} class={index % 2 === 0 ? 'bg-slate-800' : 'bg-slate-700'}>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-100">
                       #{index + 1}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-100">
                       {category}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-300 font-mono">
                       {score.toFixed(3)}
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -319,10 +334,10 @@ export default function UserSearch() {
                           <div class="flex items-center">
                             <span class={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                               isHighScore 
-                                ? 'bg-green-100 text-green-800'
+                                ? 'bg-green-900/50 text-green-300 border border-green-800'
                                 : isMediumScore 
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-yellow-900/50 text-yellow-300 border border-yellow-800'
+                                : 'bg-slate-700 text-slate-300 border border-slate-600'
                             }`}>
                               {percentage}%
                             </span>
@@ -339,10 +354,10 @@ export default function UserSearch() {
 
         {/* Raw JSON for debugging */}
         <details class="mt-4">
-          <summary class="cursor-pointer text-sm text-gray-600 hover:text-gray-900">
+          <summary class="cursor-pointer text-sm text-slate-300 hover:text-slate-100">
             Show Raw Analysis Results (for debugging)
           </summary>
-          <pre class="mt-2 p-3 bg-gray-100 rounded text-xs overflow-auto">
+          <pre class="mt-2 p-3 bg-slate-900 border border-slate-700 rounded text-xs overflow-auto text-slate-300">
             {JSON.stringify(analysis.results, null, 2)}
           </pre>
         </details>
@@ -373,22 +388,22 @@ export default function UserSearch() {
             }}
             onBlur={handleInputBlur}
             placeholder="Search Ethos users..."
-            class="w-full px-4 py-3 pl-12 text-gray-900 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            class="w-full px-4 py-3 pl-12 text-slate-100 bg-slate-700 border border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder-slate-400"
           />
           <div class="absolute inset-y-0 left-0 flex items-center pl-4">
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
           </div>
           {loading && (
             <div class="absolute inset-y-0 right-0 flex items-center pr-4">
-              <div class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              <div class="w-5 h-5 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           )}
         </div>
 
         {showDropdown && results.length > 0 && (
-          <div class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+          <div class="absolute z-10 w-full mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-lg max-h-96 overflow-y-auto">
             {results.map((user) => (
               <div
                 key={user.userkey}
@@ -396,32 +411,32 @@ export default function UserSearch() {
                   e.preventDefault(); // Prevent blur event
                   handleUserSelect(user);
                 }}
-                class="flex items-center px-4 py-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                class="flex items-center px-4 py-3 hover:bg-slate-700 cursor-pointer border-b border-slate-600 last:border-b-0"
               >
                 <img
                   src={user.avatar || '/default-avatar.svg'}
                   alt={user.name || user.username}
-                  class="w-10 h-10 rounded-full mr-3 bg-gray-200"
+                  class="w-10 h-10 rounded-full mr-3 bg-slate-600 border border-slate-500"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = '/default-avatar.svg';
                   }}
                 />
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center space-x-2">
-                    <p class="text-sm font-medium text-gray-900 truncate">
+                    <p class="text-sm font-medium text-slate-100 truncate">
                       {user.name || user.username}
                     </p>
                     {user.score > 0 && (
-                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-900/50 text-indigo-300 border border-indigo-800">
                         {user.score}
                       </span>
                     )}
                   </div>
                   {user.username && user.name && (
-                    <p class="text-sm text-gray-500 truncate">@{user.username}</p>
+                    <p class="text-sm text-slate-300 truncate">@{user.username}</p>
                   )}
                   {user.description && (
-                    <p class="text-xs text-gray-400 truncate mt-1">
+                    <p class="text-xs text-slate-400 truncate mt-1">
                       {user.description}
                     </p>
                   )}
@@ -432,8 +447,8 @@ export default function UserSearch() {
         )}
 
         {showDropdown && results.length === 0 && !loading && query.length >= 2 && (
-          <div class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
-            <div class="px-4 py-3 text-sm text-gray-500">
+          <div class="absolute z-10 w-full mt-1 bg-slate-800 border border-slate-600 rounded-lg shadow-lg">
+            <div class="px-4 py-3 text-sm text-slate-300">
               No users found for "{query}"
             </div>
           </div>
@@ -441,36 +456,36 @@ export default function UserSearch() {
       </div>
 
       {selectedUser && (
-        <div class="mt-8 p-6 bg-gray-50 rounded-lg max-w-4xl mx-auto">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Selected User:</h3>
+        <div class="mt-8 p-6 bg-slate-700 rounded-lg max-w-4xl mx-auto border border-slate-600">
+          <h3 class="text-lg font-semibold text-slate-100 mb-4">Selected User:</h3>
           <div class="flex items-center space-x-4 mb-6">
             <img
               src={selectedUser.avatar || '/default-avatar.svg'}
               alt={selectedUser.name || selectedUser.username}
-              class="w-16 h-16 rounded-full bg-gray-200"
+              class="w-16 h-16 rounded-full bg-slate-600 border border-slate-500"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = '/default-avatar.svg';
               }}
             />
             <div class="flex-1">
               <div class="flex items-center space-x-2 mb-1">
-                <h4 class="text-xl font-medium text-gray-900">
+                <h4 class="text-xl font-medium text-slate-100">
                   {selectedUser.name || selectedUser.username}
                 </h4>
                 {selectedUser.score > 0 && (
-                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-indigo-900/50 text-indigo-300 border border-indigo-800">
                     Score: {selectedUser.score}
                   </span>
                 )}
               </div>
               {selectedUser.username && selectedUser.name && (
-                <p class="text-gray-600">@{selectedUser.username}</p>
+                <p class="text-slate-300">@{selectedUser.username}</p>
               )}
               {selectedUser.description && (
-                <p class="text-gray-500 mt-2">{selectedUser.description}</p>
+                <p class="text-slate-300 mt-2">{selectedUser.description}</p>
               )}
               {selectedUser.primaryAddress && (
-                <p class="text-xs text-gray-400 mt-2 font-mono">
+                <p class="text-xs text-slate-400 mt-2 font-mono">
                   {selectedUser.primaryAddress}
                 </p>
               )}
@@ -480,7 +495,7 @@ export default function UserSearch() {
           <button
             onClick={handleAnalyze}
             disabled={analyzing}
-            class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center"
+            class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-800 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center border border-indigo-500"
           >
             {analyzing ? (
               <>
@@ -493,8 +508,8 @@ export default function UserSearch() {
           </button>
 
           {error && (
-            <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p class="text-red-800 text-sm">{error}</p>
+            <div class="mt-4 p-4 bg-red-900/50 border border-red-800 rounded-lg">
+              <p class="text-red-300 text-sm">{error}</p>
             </div>
           )}
 
