@@ -6,6 +6,7 @@ import * as $api_activities from "./routes/api/activities.ts";
 import * as $api_analyze from "./routes/api/analyze.ts";
 import * as $api_search from "./routes/api/search.ts";
 import * as $index from "./routes/index.tsx";
+import * as $DarkModeToggle from "./islands/DarkModeToggle.tsx";
 import * as $UserSearch from "./islands/UserSearch.tsx";
 import { type Manifest } from "$fresh/server.ts";
 
@@ -17,6 +18,7 @@ const manifest = {
     "./routes/index.tsx": $index,
   },
   islands: {
+    "./islands/DarkModeToggle.tsx": $DarkModeToggle,
     "./islands/UserSearch.tsx": $UserSearch,
   },
   baseUrl: import.meta.url,
