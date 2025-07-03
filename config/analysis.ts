@@ -56,13 +56,9 @@ export const analysisConfig: AnalysisConfig = {
     {
       name: "Angel investors",
       description: "Early-stage investors who provide capital, mentorship, and strategic guidance to startups and emerging projects"
-    },
-    {
-      name: "Ethos contributor",
-      description: "Actively contributes to the Ethos ecosystem through reviews, vouches, slashes, or other platform engagement"
-    },
-    {
-      name: "Content creator",
+          },
+      {
+        name: "Content creator",
       description: "Creates various types of content including videos, articles, research, thought leadership, or educational materials"
     },
     {
@@ -96,13 +92,9 @@ export const analysisConfig: AnalysisConfig = {
     {
       name: "Art collectors",
       description: "Enthusiasts who collect, curate, and trade digital or physical art, often with deep knowledge of artistic trends and creators"
-    },
-    {
-      name: "Community members",
-      description: "Active participants who contribute to community discussions, events, and initiatives while fostering positive relationships"
-    },
-    {
-      name: "Scammers",
+          },
+      {
+        name: "Scammers",
       description: "Individuals who engage in fraudulent activities, deceptive practices, or malicious behavior within the ecosystem"
     }
 
